@@ -64,8 +64,11 @@ $(C_OBJS): %.o :%.c
 	$(CC) -c $(CFLAGS) $(INCPATH) -o "$@" "$<"
 
 # make 带 c 参数: make c，等于make clean
-c: clean
-# make clean的实现
+c: 
+# 清除所有过程文件
+	-$(DEL_FILE) $(OBJECTS)
+	-$(DEL_FILE) $(CPP_OBJS_D) $(C_OBJS_D)
+	-$(DEL_FILE) *~ *.o *.d
 clean:
 # 清除saolei
 	-$(DEL_FILE) $(TARGET)

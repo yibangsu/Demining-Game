@@ -173,8 +173,10 @@ int init(int size, int booms)
  * 刷新函数
  * 作用：
  *    刷新显示
+ * 输入：
+ *    game_state - 游戏状态
  */
-void update()
+void update(game_ret game_state)
 {
 	/* 如果没有申请matrix, 提示错误并返回 */
 	if (!m_demining.matrix || m_demining.size <= 0)
@@ -198,22 +200,53 @@ void update()
 #if (DEBUG_MATRIX == 1)
 			mvwprintw(stdscr, j, i, "%d", m_demining.matrix[i][j].value); // 调试语句，只有在宏DEBUG_MATRIX 为1时有用
 #else
-			/* 显示每一个格子 */
-			if (m_demining.matrix[i][j].isOpen) // 如果打开
+			if (game_continue == game_state) 
 			{
-				mvwprintw(stdscr, j, i, "%d", m_demining.matrix[i][j].value); // 显示周围雷数
+				/* 显示每一个格子 */
+				if (m_demining.matrix[i][j].isOpen) // 如果打开
+				{
+					mvwprintw(stdscr, j, i, "%d", m_demining.matrix[i][j].value); // 显示周围雷数
+				}
+				else if (m_demining.matrix[i][j].isMarkBoom) // 标记为雷
+				{
+					mvwprintw(stdscr, j, i, BOOM_MARK); // 显示雷标
+				}
+				else // 如果没打开
+				{
+					mvwprintw(stdscr, j, i, HIDE_BOX); // 显示隐藏
+				}
 			}
-			else if (m_demining.matrix[i][j].isMarkBoom) // 标记为雷
+			else
 			{
-				mvwprintw(stdscr, j, i, BOOM_MARK); // 显示雷标
-			}
-			else // 如果没打开
-			{
-				mvwprintw(stdscr, j, i, HIDE_BOX); // 显示隐藏
+				if (m_demining.matrix[i][j].value < 0 && m_demining.matrix[i][j].isOpen) // 踩到雷
+				{
+					mvwprintw(stdscr, j, i, BOOM_ON); // 显示踩到的雷
+				} 
+				else if (m_demining.matrix[i][j].value < 0) // 雷
+				{
+					mvwprintw(stdscr, j, i, BOOM); // 显示雷标
+				}
+				else if (m_demining.matrix[i][j].isOpen || game_win == game_state) //打开或赢了
+				{
+					mvwprintw(stdscr, j, i, "%d", m_demining.matrix[i][j].value); // 显示周围雷数
+				}
+				else
+				{
+					mvwprintw(stdscr, j, i, HIDE_BOX); // 显示隐藏
+				}
 			}
 #endif
 		} 
 		wprintw(stdscr, "\r"); // 换行
+	}
+
+	if (game_win == game_state)
+	{
+		mvwprintw(stdscr, m_demining.size, 0, "You have finish the game, press y to exit.\r");
+	}
+	else if (game_lose == game_state)
+	{
+		mvwprintw(stdscr, m_demining.size, 0, "You have touch a boom, press y to exit.\r");
 	}
 
 	wmove(stdscr, m_demining.y, m_demining.x); // 显示光标
@@ -264,45 +297,36 @@ int main(int argc, char ** argv)
 	noecho(); // 设置不回显
 	keypad(stdscr, TRUE); // 捕捉特殊按键，包括方向键
 
+	/* 刷新显示 */
+	game_ret game_state = game_continue;
+	update(game_state); // 刷新显示
+	refresh(); // 刷新屏幕
+
+	int c;
 	/* 死循环刷新并捕捉输入 */
 	do
 	{
-		update(); // 刷新显示
-		int c = getch(); // 捕捉按键
+		c = getch(); // 捕捉按键
 		input_ret ret = handle_input(c, &m_demining); // 处理按键事件
 		
 		/* 判断是否踩雷 */
 		if (ret == ret_click && m_demining.matrix[m_demining.x][m_demining.y].value < 0)
 		{
-			touch_boom();
-			goto boom;
+			game_state = game_lose;
 		}
 		/* 判断游戏是否完成 */
 		if (!m_demining.booms) // 游戏完成
 		{
-			show_game_finish();
-			goto boom;
+			game_state = game_win;
 		}
 		
+		update(game_state); // 刷新显示
 		refresh(); // 刷新屏幕
-	} while(1);
 
-boom:
+	} while(game_continue == game_state || NORMAL_KEY_Y != c);
+
 	endwin(); // 终止nurses
 	return 0;
-}
-
-/*
- * 触雷函数
- * 作用
- *    触雷显示并结束游戏
- */
-void touch_boom()
-{
-	erase();
-	wprintw(stdscr, "You have touch a boom, press any key to exit.\r");
-	refresh();
-	getch();
 }
 
 /*
@@ -358,17 +382,4 @@ int param_parse(int argc, char ** argv, param_data * param)
 		argv++;
 	}
 	return 0;
-}
-
-/* 
- * 定义游戏完成函数
- * 作用：
- *    显示游戏完成
- */
-void show_game_finish(void)
-{
-	erase();
-	wprintw(stdscr, "You have finish the game, press any key to exit.\r");
-	refresh();
-	getch();
 }

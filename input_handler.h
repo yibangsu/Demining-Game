@@ -13,6 +13,8 @@ extern "C" {
 #define NORMAL_KEY_SPACE	(32)
 /* c键值 */
 #define NORMAL_KEY_C		(99)
+/* y鍵值 */
+#define NORMAL_KEY_Y		(121)
 
 /* 定义按键处理返回值，枚举变量类型定义 */
 typedef enum input_result

@@ -29,7 +29,7 @@ extern "C" {
 #define VERSION_PARAM_SHORT	"-v"
 #define VERSION_PARAM		"-version"
 /* 定义版本号 */
-#define VERSION			"1.1.0"
+#define VERSION			"1.2.0"
 /* 定义大小命令 */
 #define SIZE_PARAM_SHORT	"-s"
 #define SIZE_PARAM		"-size"
@@ -41,6 +41,10 @@ extern "C" {
 #define HIDE_BOX		"*"
 /* 定义雷标记 */
 #define BOOM_MARK		"#"
+/* 定义雷符号 */
+#define BOOM			"@"
+/* 定义踩到的雷 */
+#define BOOM_ON			"!"
 
 /* 定义每个格子的属性元素结构体，属于类型定义 */
 typedef struct element_struct {
@@ -65,6 +69,23 @@ typedef struct demining_struct {
 	/* 剩余雷数 */
 	unsigned int booms;
 } demining;
+
+/* 定义参数结构体，类型定义 */
+typedef struct param_data_struct
+{
+	int bHelp;
+	int bVersion;
+	int size;
+	int booms;
+} param_data;
+
+/* 定义游戏结果枚举类型，类型定义 */
+typedef enum game_result
+{
+	game_continue,
+	game_win,
+	game_lose
+} game_ret;
 
 /* 定义全局扫雷变量，属于变量定义 */
 demining m_demining;
@@ -94,24 +115,10 @@ int update_matrix(void);
  * 定义刷新函数
  * 作用：
  *    刷新显示
+ * 输入：
+ *    game_state - 游戏状态
  */
-void update();
-
-/*
- * 定义触雷函数
- * 作用：
- *    触雷显示并结束游戏
- */
-void touch_boom();
-
-/* 定义参数枚举类型，类型定义 */
-typedef struct param_data_struct
-{
-	int bHelp;
-	int bVersion;
-	int size;
-	int booms;
-} param_data;
+void update(game_ret game_state);
 
 /*
  * 定义参数解析函数
@@ -132,13 +139,6 @@ int param_parse(int argc, char ** argv, param_data * param);
  *     输出帮助信息
  */
 void show_help(void);
-
-/* 
- * 定义显示游戏完成函数
- * 作用：
- *    显示游戏完成
- */
-void show_game_finish(void);
 
 /* 添加cpp支持， 跟 extern c对应 */
 #ifdef __cplusplus

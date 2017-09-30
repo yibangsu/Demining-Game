@@ -29,7 +29,7 @@ extern "C" {
 #define VERSION_PARAM_SHORT	"-v"
 #define VERSION_PARAM		"-version"
 /* 定义版本号 */
-#define VERSION			"1.2.0"
+#define VERSION			"1.3.0"
 /* 定义大小命令 */
 #define SIZE_PARAM_SHORT	"-s"
 #define SIZE_PARAM		"-size"
@@ -139,6 +139,14 @@ int param_parse(int argc, char ** argv, param_data * param);
  *     输出帮助信息
  */
 void show_help(void);
+
+/*
+ * 迭代函数，打开格子值为0的周围格子
+ * 输入:
+ * 	dx - x的坐标值
+ * 	dy - y的坐标值
+ */
+void open_around(int dx, int dy);
 
 /* 添加cpp支持， 跟 extern c对应 */
 #ifdef __cplusplus

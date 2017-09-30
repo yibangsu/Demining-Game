@@ -11,6 +11,12 @@ cost about 2 days
 cost about 1 hour
 玩得不爽，修改了下
 
+# version 1.3.0
+2017-09-30
+cost 1 hour
+快放假了，没心上班，优化下游戏
+打开格子值为0,周围没雷，把周围的格子也顺便打开
+
 # depandency
 1) ncurses:
 	sudo apt-get install libncurses5-dev

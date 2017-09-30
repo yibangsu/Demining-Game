@@ -309,16 +309,26 @@ int main(int argc, char ** argv)
 		c = getch(); // 捕捉按键
 		input_ret ret = handle_input(c, &m_demining); // 处理按键事件
 		
-		/* 判断是否踩雷 */
-		if (ret == ret_click && m_demining.matrix[m_demining.x][m_demining.y].value < 0)
+		/* 打开格子 */
+		if (ret == ret_click)
 		{
-			game_state = game_lose;
+			/* 判断是否踩雷 */
+			if (m_demining.matrix[m_demining.x][m_demining.y].value < 0)
+			{
+				game_state = game_lose;
+			}
+			/* 判断是否中奖 */
+			if (0 == m_demining.matrix[m_demining.x][m_demining.y].value)
+			{
+				open_around(m_demining.x, m_demining.y);
+			}
 		}
 		/* 判断游戏是否完成 */
 		if (!m_demining.booms) // 游戏完成
 		{
 			game_state = game_win;
 		}
+		
 		
 		update(game_state); // 刷新显示
 		refresh(); // 刷新屏幕
@@ -327,6 +337,52 @@ int main(int argc, char ** argv)
 
 	endwin(); // 终止nurses
 	return 0;
+}
+
+/*
+ * 内联函数，判断是否在扫雷范围
+ * 输入:
+ * 	x或y的坐标值
+ * 返回:
+ * 	1 - 不在范围内
+ * 	0 - 在范围内
+ */
+inline int check_out_of_arrange(int v)
+{
+	if (v < 0 || v >= m_demining.size) return 1;
+
+	return 0;
+}
+
+/*
+ * 迭代函数，打开格子值为0的周围格子
+ * 输入:
+ * 	dx - x的坐标值
+ * 	dy - y的坐标值
+ */
+void open_around(int dx, int dy)
+{
+	int x, y;
+
+	if (check_out_of_arrange(dx) || check_out_of_arrange(dy) 
+		|| 0 != m_demining.matrix[dx][dy].value) return;
+
+	for (x = dx - 1; x <= dx + 1; x++)
+	{
+		if (check_out_of_arrange(x)) continue;
+		for (y = dy - 1; y <= dy + 1; y++)
+		{
+			if (check_out_of_arrange(y)) continue;
+			if (1 == m_demining.matrix[x][y].isOpen) continue;
+
+			m_demining.matrix[x][y].isOpen = 1;
+
+			if (0 == m_demining.matrix[x][y].value)
+			{
+				open_around(x, y);
+			}
+		}
+	}
 }
 
 /*

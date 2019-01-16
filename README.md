@@ -32,3 +32,6 @@ cost 1 hour
 
 # help
 	./demining -h
+
+# demo
+![demo](/doc/pic.png)
